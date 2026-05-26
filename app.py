@@ -446,9 +446,20 @@ with tab4:
     fig.add_trace(go.Scatter(
         x=year_data['날짜'], y=year_data['최저기온(℃)'],
         name='최저기온', line=dict(color='#3498db')))
-    fig.add_vline(
-        x=suneung_of_year, line_dash="dash", line_color="purple",
-        annotation_text="🎓 수능일", annotation_position="top",
+    # plotly 6.x에서 datetime 축의 add_vline + annotation 조합은
+    # 내부 평균 계산(sum 초깃값 int)이 Timestamp/문자열과 충돌해 TypeError 발생.
+    # add_shape + add_annotation으로 분리해서 안전하게 그립니다.
+    suneung_str = suneung_of_year.strftime('%Y-%m-%d')
+    fig.add_shape(
+        type="line",
+        x0=suneung_str, x1=suneung_str,
+        yref="paper", y0=0, y1=1,
+        line=dict(color="purple", width=2, dash="dash"),
+    )
+    fig.add_annotation(
+        x=suneung_str, yref="paper", y=1.02,
+        text="🎓 수능일", showarrow=False,
+        font=dict(color="purple", size=13),
     )
     fig.update_layout(
         title=f"{selected_year}년 11~12월 기온 추이",
